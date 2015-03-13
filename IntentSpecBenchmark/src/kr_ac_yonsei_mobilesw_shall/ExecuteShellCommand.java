@@ -7,13 +7,13 @@ import kr_ac_yonsei_mobilesw_UI.Benchmark;
 
 public class ExecuteShellCommand {
 	public static void executeCommand(Benchmark ui, String command) 
-	{
+	{		
 		Thread worker = new Thread()
 		{
 			public void run()
 			{
 				Process p;
-				try {
+				try {					
 					p = Runtime.getRuntime().exec(command);
 					
 					ui.appendTxt_adbCommandLog("> " + command);
@@ -46,7 +46,7 @@ public class ExecuteShellCommand {
 		worker.start();
 	}
 	
-	public static void showLogcat(Benchmark ui)
+	public static void showLogcat(Benchmark ui,  String command, String filter)
 	{
 		Thread worker = new Thread()
 		{
@@ -54,9 +54,9 @@ public class ExecuteShellCommand {
 			{
 				Process p;
 				try {
-					p = Runtime.getRuntime().exec("D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/adb logcat");
+					p = Runtime.getRuntime().exec(command);
 					
-					ui.appendTxt_logcat("> " + "adb logcat");
+					ui.appendTxt_logcat("> " + command);
 					
 					while(p.isAlive())
 					{
@@ -67,11 +67,19 @@ public class ExecuteShellCommand {
 						{
 							if(line.equals("") == false)
 							{
-								ui.appendTxt_logcat("\n" + line);
+								if(filter != null)
+								{
+									if(line.contains(filter))
+									{
+										ui.appendTxt_logcat("\n" + line);										
+									}
+								}
+								else
+								{
+									ui.appendTxt_logcat("\n" + line);
+								}
 							}
 						}
-						
-						ui.appendTxt_logcat("\n\n");
 					}
 				}
 				catch (Exception e)

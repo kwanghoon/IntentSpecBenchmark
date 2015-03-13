@@ -72,7 +72,7 @@ public class Benchmark extends JFrame {
 		btnViewlogcat.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				ExecuteShellCommand.showLogcat(Benchmark.this);
+				ExecuteShellCommand.showLogcat(Benchmark.this, "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + "adb logcat -v threadtime *:V", null);//"com.enterpriseandroid.androidSecurity");
 			}
 		});
 		btnViewlogcat.setBounds(868, 11, 128, 30);
@@ -95,6 +95,13 @@ public class Benchmark extends JFrame {
 				}
 				
 				setisBusy(true);
+
+				if(command.substring(0, 3).equals("adb"))
+				{
+					command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
+				}
+				
+				txt_logcat.setText("");
 				
 				////D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
 				ExecuteShellCommand.executeCommand(Benchmark.this, command);
