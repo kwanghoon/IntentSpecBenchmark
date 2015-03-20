@@ -38,8 +38,6 @@ public class ExecuteShellCommand {
 				{
 					e.printStackTrace();
 				}
-				
-				ui.setisBusy(false);
 			}
 		};
 		
@@ -67,6 +65,40 @@ public class ExecuteShellCommand {
 							{
 								ui.appendTxt_logcat(line);
 								ui.showLogcat();
+							}
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		};
+		
+		worker.start();
+	}
+	
+	public static void readDevice(Benchmark ui, String command) 
+	{		
+		Thread worker = new Thread()
+		{
+			public void run()
+			{
+				Process p;
+				try {					
+					p = Runtime.getRuntime().exec(command);
+					
+					while(p.isAlive())
+					{
+						BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						String line = "";
+						
+						while ((line = reader.readLine())!= null) 
+						{
+							if(line.equals("") == false)
+							{
+								ui.showDeviceList(line);
 							}
 						}
 					}

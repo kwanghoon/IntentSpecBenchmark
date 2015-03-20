@@ -5,7 +5,9 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.Rectangle;
 
+import javax.swing.DebugGraphics;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -38,9 +40,17 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JLabel;
 
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Benchmark extends JFrame {
 
 	private static final long serialVersionUID = -8114454317556683079L;
+	
+	private static final Logger logger = Logger.getLogger(Benchmark.class.getName());
+    private FileHandler fileHandler;
 	
 	private boolean isBusy = false;
 	private char logLevel = 'V';
@@ -65,6 +75,7 @@ public class Benchmark extends JFrame {
 	private DefaultTableModel modelLogcatFilter;
 	private JTextField txtFilter;
 	private JTextField txtAdbPath;
+	private JComboBox cboDeviceID;
 
 	/**
 	 * Launch the application.
@@ -94,6 +105,8 @@ public class Benchmark extends JFrame {
 	 * Create the frame.
 	 */
 	public Benchmark() {
+		addFileHandler(logger);
+		
 		setTitle("IntentSpecBenchmark v1.0");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1259, 750);
@@ -106,7 +119,31 @@ public class Benchmark extends JFrame {
 		btnViewlogcat.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				ExecuteShellCommand.showLogcat(Benchmark.this, "C:/adt-bundle-windows-x86-20140702/sdk/platform-tools/" + "adb -s 5888e6a4 logcat -v threadtime *:V");
+				String command = "adb -s 5888e6a4 logcat -v threadtime *:V";		//Don't have command
+				
+				if(cboDeviceID.getSelectedItem() == null)
+				{
+					command = "adb logcat -v threadtime *:V";
+				}
+				else
+				{
+					String deviceID = cboDeviceID.getSelectedItem().toString().substring(cboDeviceID.getSelectedItem().toString().indexOf(":") + 1, cboDeviceID.getSelectedItem().toString().length());
+					command = "adb -s " + deviceID + " logcat -v threadtime *:V";
+					
+					logger.info("btnViewlogcat => DevicesID : " + deviceID + ", command : " + command);
+				}
+				
+				
+				if(txtAdbPath.getText().trim().equals(""))
+				{
+					command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
+				}
+				else
+				{
+					command = txtAdbPath.getText().trim() + command;
+				}
+				
+				ExecuteShellCommand.showLogcat(Benchmark.this, command);
 			}
 		});
 		btnViewlogcat.setBounds(1025, 198, 99, 30);
@@ -132,9 +169,22 @@ public class Benchmark extends JFrame {
 
 				if(command.substring(0, 3).equals("adb"))
 				{
+					
+					if(cboDeviceID.getSelectedItem() == null)
+					{
+						//none
+					}
+					else
+					{
+						String deviceID = cboDeviceID.getSelectedItem().toString().substring(cboDeviceID.getSelectedItem().toString().indexOf(":") + 1, cboDeviceID.getSelectedItem().toString().length());
+						command = command.replace("adb", "adb -s " + deviceID);
+						
+						logger.info("btnStart => DevicesID : " + deviceID + ", command : " + command);
+					}
+					
 					if(txtAdbPath.getText().trim().equals(""))
 					{
-						command = "C:/adt-bundle-windows-x86-20140702/sdk/platform-tools/" + command;
+						command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
 					}
 					else
 					{
@@ -144,6 +194,8 @@ public class Benchmark extends JFrame {
 
 				////D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/adb -s 5888e6a4 shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
 				ExecuteShellCommand.executeCommand(Benchmark.this, command);
+				
+				setisBusy(false);
 			}
 		});
 		btnStart.setBounds(1152, 144, 79, 30);
@@ -354,6 +406,49 @@ public class Benchmark extends JFrame {
 		lblAdbPath.setBounds(12, 10, 67, 15);
 		contentPane.add(lblAdbPath);
 		
+		cboDeviceID = new JComboBox();
+		cboDeviceID.setBounds(12, 86, 214, 30);
+		contentPane.add(cboDeviceID);
+		
+		JLabel lblDeviceId = new JLabel("Device ID : ");
+		lblDeviceId.setBounds(12, 66, 67, 15);
+		contentPane.add(lblDeviceId);
+		
+		JButton btnReadDevice = new JButton("ReadDevice");
+		btnReadDevice.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+
+				String command = "adb devices -l";
+				
+				if(getisBusy() == true)										//Already processing
+				{
+					JOptionPane.showMessageDialog (null, "Now Processing...");
+					return;
+				}
+				
+				setisBusy(true);
+				
+				cboDeviceID.removeAllItems();
+
+				if(txtAdbPath.getText().trim().equals(""))
+				{
+					command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
+				}
+				else
+				{
+					command = txtAdbPath.getText().trim() + command;
+				}
+				
+				ExecuteShellCommand.readDevice(Benchmark.this, command);
+				
+				setisBusy(false);
+				
+			}
+		});
+		btnReadDevice.setBounds(129, 126, 99, 30);
+		contentPane.add(btnReadDevice);
+		
 	}
 	
 	public void appendTxt_adbCommandLog(String str)
@@ -374,17 +469,14 @@ public class Benchmark extends JFrame {
 		LogcatLock.lock();
 		
 		modelLogcat.addRow(newRow);
-		int deleteCount = 0;
+		
 		if(modelLogcat.getRowCount() > logcatMaximumCount)
 		{
-			deleteCount = modelLogcat.getRowCount() - logcatMaximumCount;
-			logcatReadStartIndex = logcatReadStartIndex - deleteCount;
-			
-			for(int i = 0; i < deleteCount; i++)
-			{
-				modelLogcat.removeRow(i);
-			}
+			modelLogcat.removeRow(0);
+			logcatReadStartIndex--;
 		}
+		
+		//logger.info("modelLogcat => modelLogcat.getRowCount() : " + modelLogcat.getRowCount() + ", logcatMaximumCount : " + logcatMaximumCount + ", logcatReadStartIndex : " + logcatReadStartIndex);
 		
 		LogcatLock.unlock();
 	}
@@ -562,13 +654,16 @@ public class Benchmark extends JFrame {
 		
 		if(modelLogcatView.getRowCount() > logcatMaximumCount)
 		{
-			int deleteCount = modelLogcatView.getRowCount() - logcatMaximumCount;
-			
-			for(int i = 0; i < deleteCount; i++)
-			{
-				modelLogcatView.removeRow(i);
-			}
+			modelLogcatView.removeRow(0);
 		}
+		
+		if(scrollbarLockBottom == true)
+		{
+			JScrollBar vertical = scrollPaneLogcat.getVerticalScrollBar();
+			scrollPaneLogcat.getViewport().setViewPosition(new Point(0, vertical.getMaximum()));
+		}
+		
+		//logger.info("modelLogcatView => modelLogcatView.getRowCount() : " + modelLogcatView.getRowCount() + ", logcatMaximumCount : " + logcatMaximumCount + ", logcatReadStartIndex : " + logcatReadStartIndex);
 		
 		LogcatLock.unlock();
 	}
@@ -579,11 +674,30 @@ public class Benchmark extends JFrame {
 				modelLogcat.getValueAt(row, 4), modelLogcat.getValueAt(row, 5), modelLogcat.getValueAt(row, 6), modelLogcat.getValueAt(row, 7)};
 		
 		modelLogcatView.addRow(newRow);
-		
-		if(scrollbarLockBottom == true)
-		{
-			JScrollBar vertical = scrollPaneLogcat.getVerticalScrollBar();
-			scrollPaneLogcat.getViewport().setViewPosition(new Point(0, vertical.getMaximum()));
-		}
 	}
+	
+    private void addFileHandler(Logger logger) {
+        try {
+            fileHandler = new FileHandler(Benchmark.class.getName() + ".log");
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        logger.addHandler(fileHandler);
+    }
+    
+    public void showDeviceList(String deviceText)
+    {
+    	if(deviceText.contains("List of devices attached")){
+    		return;
+    	}
+    	
+    	String DevicesID = deviceText.substring(0, deviceText.indexOf(" "));
+    	String model = deviceText.substring(deviceText.indexOf("model:") + 6, deviceText.indexOf(" ", deviceText.indexOf("model:") + 5)); 
+    	
+    	//logger.info("showDeviceList => DevicesID : " + DevicesID + ", model : "  + model + ", raw : " + deviceText);
+    	
+    	cboDeviceID.addItem(model + ":" + DevicesID);
+    }
 }
