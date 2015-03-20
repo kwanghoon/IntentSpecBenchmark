@@ -62,7 +62,6 @@ public class Benchmark extends JFrame {
 	private int logcatMaximumCount = 5000;
 	private boolean scrollbarLockBottom = false;
 	
-	
 	private JPanel contentPane;
 	private JButton btnStart;
 	private JTextField txtAdbCommand;
@@ -192,7 +191,7 @@ public class Benchmark extends JFrame {
 					}
 				}
 
-				////D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/adb -s 5888e6a4 shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
+				//adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
 				ExecuteShellCommand.executeCommand(Benchmark.this, command);
 				
 				setisBusy(false);
@@ -398,6 +397,7 @@ public class Benchmark extends JFrame {
 		contentPane.add(cboLogLevel);
 		
 		txtAdbPath = new JTextField();
+		txtAdbPath.setText("D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/");
 		txtAdbPath.setBounds(12, 28, 214, 28);
 		contentPane.add(txtAdbPath);
 		txtAdbPath.setColumns(10);
