@@ -46,7 +46,7 @@ public class ExecuteShellCommand {
 		worker.start();
 	}
 	
-	public static void showLogcat(Benchmark ui,  String command, String filter)
+	public static void showLogcat(Benchmark ui,  String command)
 	{
 		Thread worker = new Thread()
 		{
@@ -55,8 +55,6 @@ public class ExecuteShellCommand {
 				Process p;
 				try {
 					p = Runtime.getRuntime().exec(command);
-					
-					ui.appendTxt_logcat("> " + command);
 					
 					while(p.isAlive())
 					{
@@ -67,17 +65,8 @@ public class ExecuteShellCommand {
 						{
 							if(line.equals("") == false)
 							{
-								if(filter != null)
-								{
-									if(line.contains(filter))
-									{
-										ui.appendTxt_logcat("\n" + line);										
-									}
-								}
-								else
-								{
-									ui.appendTxt_logcat("\n" + line);
-								}
+								ui.appendTxt_logcat(line);
+								ui.showLogcat();
 							}
 						}
 					}
