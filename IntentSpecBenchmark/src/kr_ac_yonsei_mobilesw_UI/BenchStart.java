@@ -114,6 +114,20 @@ public class BenchStart {
 					addRowinExcel("--");
 				}
 				
+				String resultAll = "Force finishing \t: " + ForceFinishing
+				+ "\nFinishing \t: " + Finishing 
+				+ "\nForce removing: " + ForceRemoving
+				+ "\nDisplayed \t: " + Displayed
+				+ "\nCan't analyze \t: " + CantAnalyze 
+				+ "\nResult Count \t: " + (ForceFinishing + Finishing + ForceRemoving + Displayed + CantAnalyze);
+				
+				String[] resultAllLine = resultAll.split("\n");
+				
+				for(int i = 0; i < resultAllLine.length; i++)
+				{
+					addRowinExcel(resultAllLine[i]);
+				}
+				
 				try {
 					workbook.write();
 					workbook.close();

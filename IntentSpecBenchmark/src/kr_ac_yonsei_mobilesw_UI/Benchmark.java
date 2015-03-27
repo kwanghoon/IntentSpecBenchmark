@@ -503,10 +503,7 @@ public class Benchmark extends JFrame {
 		btnAdbCommandClr.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				//modelAdbCommand.setRowCount(0);
-				
-				BenchStart benchStart = new BenchStart();
-				benchStart.makeExcel();
+				modelAdbCommand.setRowCount(0);
 			}
 		});
 		btnAdbCommandClr.setBounds(66, 672, 55, 30);
