@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 
 import jxl.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 public class Benchmark extends JFrame {
 
@@ -69,7 +71,7 @@ public class Benchmark extends JFrame {
 	
 	private JPanel contentPane;
 	private JButton btnStart;
-	private JTextField txtAdbCommand;
+	JTextField txtAdbCommand;
 	private JTextArea txtAdbCommandLog;
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPaneLogcat;
@@ -77,8 +79,8 @@ public class Benchmark extends JFrame {
 	private DefaultTableModel modelLogcat;
 	private DefaultTableModel modelLogcatView;
 	private DefaultTableModel modelLogcatFilter;
-	private DefaultTableModel modelAdbCommand;
-	private JTextField txtFilter;
+	DefaultTableModel modelAdbCommand;
+	JTextField txtFilter;
 	private JTextField txtAdbPath;
 	private JComboBox cboDeviceID;
 	private JTextField txtBenchLog;
@@ -355,6 +357,15 @@ public class Benchmark extends JFrame {
 		contentPane.add(cboLogLevel);
 		
 		txtAdbPath = new JTextField();
+		txtAdbPath.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				
+				String adbPath = txtAdbPath.getText();
+				
+				txtAdbPath.setText(txtAdbPath.getText().replaceAll("\\\\", "/"));
+			}
+		});
 		txtAdbPath.setText("D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/");
 		txtAdbPath.setBounds(12, 28, 214, 28);
 		contentPane.add(txtAdbPath);
