@@ -19,12 +19,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Random;
+import javax.swing.JSplitPane;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.DefaultComboBoxModel;
 
 public class BenchAdd extends JFrame {
 
 	private JPanel contentPane;
 	private static Benchmark benchmarkUI;
 	private JTextArea txtAdbCommand;
+	private JTextField txtIntentSpec;
 
 	/**
 	 * Launch the application.
@@ -46,11 +51,12 @@ public class BenchAdd extends JFrame {
 	 * Create the frame.
 	 */
 	public BenchAdd(Benchmark mUI) {
+		setTitle("Add - AdbCommand");
 		
 		this.benchmarkUI = mUI;
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 639, 502);
+		setBounds(100, 100, 1259, 750);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -59,7 +65,7 @@ public class BenchAdd extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setBounds(12, 10, 599, 410);
+		scrollPane.setBounds(12, 50, 1219, 612);
 		contentPane.add(scrollPane);
 		
 		txtAdbCommand = new JTextArea();
@@ -73,7 +79,7 @@ public class BenchAdd extends JFrame {
 				AddAdbCommand();
 			}
 		});
-		btnOk.setBounds(401, 430, 99, 30);
+		btnOk.setBounds(1021, 672, 99, 30);
 		contentPane.add(btnOk);
 		
 		JButton btnCancel = new JButton("Cancel");
@@ -83,8 +89,26 @@ public class BenchAdd extends JFrame {
 				Close();
 			}
 		});
-		btnCancel.setBounds(512, 430, 99, 30);
+		btnCancel.setBounds(1132, 672, 99, 30);
 		contentPane.add(btnCancel);
+		
+		JComboBox cboComponent = new JComboBox();
+		cboComponent.setModel(new DefaultComboBoxModel(new String[] {"Activity", "Broadcast Receiver", "Service"}));
+		cboComponent.setBounds(991, 10, 129, 30);
+		contentPane.add(cboComponent);
+		
+		JButton btnMake = new JButton("make");
+		btnMake.setBounds(1132, 10, 99, 30);
+		contentPane.add(btnMake);
+		
+		txtIntentSpec = new JTextField();
+		txtIntentSpec.setBounds(12, 12, 821, 28);
+		contentPane.add(txtIntentSpec);
+		
+		JComboBox cboMakeMode = new JComboBox();
+		cboMakeMode.setModel(new DefaultComboBoxModel(new String[] {"PassOnly", "RandomUsingSpec", "Random"}));
+		cboMakeMode.setBounds(845, 10, 134, 30);
+		contentPane.add(cboMakeMode);
 	}
 	
 	public void Close()
@@ -261,7 +285,9 @@ public class BenchAdd extends JFrame {
 	
 	public Object[] makeRow(int seq, String str)
 	{
-		Object[] row = new Object[]{String.valueOf(seq), str};
+		String dummy = "";
+		
+		Object[] row = new Object[]{String.valueOf(seq), str, dummy};
 		
 		return row;
 	}

@@ -48,9 +48,10 @@ import java.util.logging.Logger;
 
 import javax.swing.table.TableModel;
 
-import jxl.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+
+import javax.swing.JSplitPane;
 
 public class Benchmark extends JFrame {
 
@@ -72,20 +73,21 @@ public class Benchmark extends JFrame {
 	private JPanel contentPane;
 	private JButton btnStart;
 	JTextField txtAdbCommand;
-	private JTextArea txtAdbCommandLog;
+	JTextArea txtAdbCommandLog;
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPaneLogcat;
 	private JTable tblLogcat;
 	private DefaultTableModel modelLogcat;
-	private DefaultTableModel modelLogcatView;
+	DefaultTableModel modelLogcatView;
 	private DefaultTableModel modelLogcatFilter;
 	DefaultTableModel modelAdbCommand;
 	JTextField txtFilter;
 	private JTextField txtAdbPath;
 	private JComboBox cboDeviceID;
-	private JTextField txtBenchLog;
 	private JButton btnBenchAdd;
 	private JTable tblAdbCommand;
+	JTextArea txtBenchResult;
+	private JButton btnExecwithfilter;
 
 	/**
 	 * Launch the application.
@@ -166,11 +168,11 @@ public class Benchmark extends JFrame {
 				exec();
 			}
 		});
-		btnStart.setBounds(1152, 144, 79, 30);
+		btnStart.setBounds(1073, 144, 79, 30);
 		contentPane.add(btnStart);
 		
 		txtAdbCommand = new JTextField();
-		txtAdbCommand.setBounds(241, 146, 899, 28);
+		txtAdbCommand.setBounds(241, 146, 831, 28);
 		contentPane.add(txtAdbCommand);
 		txtAdbCommand.setColumns(10);
 		
@@ -419,13 +421,14 @@ public class Benchmark extends JFrame {
 		contentPane.add(btnReadDevice);
 		
 		JScrollPane scrollPaneBench = new JScrollPane();
-		scrollPaneBench.setBounds(12, 172, 214, 456);
+		scrollPaneBench.setBounds(12, 172, 217, 372);
 		scrollPaneBench.getViewport().setBackground(Color.white);
 		contentPane.add(scrollPaneBench);
 		
 		modelAdbCommand = new DefaultTableModel();
 		modelAdbCommand.addColumn("Seq");
 		modelAdbCommand.addColumn("Command");
+		modelAdbCommand.addColumn("Result");
 		
 		tblAdbCommand = new JTable(modelAdbCommand){
             private static final long serialVersionUID = 1L;
@@ -434,7 +437,29 @@ public class Benchmark extends JFrame {
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component comp = super.prepareRenderer(renderer, row, column);
                 JComponent jc = (JComponent) comp;
-                comp.setForeground(Color.black);
+                
+                String result = getModel().getValueAt(row, 2).toString();
+                
+                if(result.equals("Force finishing"))
+                {
+                	comp.setForeground(new Color(255, 0, 0));
+                }
+                else if(result.equals("Finishing"))
+                {
+                	comp.setForeground(new Color(255, 127, 0));
+                }
+                else if(result.equals("Force removing"))
+                {
+                	comp.setForeground(new Color(0, 127, 0));
+                }
+                else if(result.equals("Displayed"))
+                {
+                	comp.setForeground(new Color(0, 0, 127));
+                }	
+                else
+                {
+                	comp.setForeground(Color.black);
+                }
                 
                 return comp;
             }
@@ -448,7 +473,8 @@ public class Benchmark extends JFrame {
 		scrollPaneBench.setViewportView(tblAdbCommand);
 		
 		tblAdbCommand.getColumnModel().getColumn(0).setPreferredWidth(50);
-		tblAdbCommand.getColumnModel().getColumn(1).setPreferredWidth(5000);
+		tblAdbCommand.getColumnModel().getColumn(1).setPreferredWidth(2000);
+		tblAdbCommand.getColumnModel().getColumn(2).setPreferredWidth(150);
 		
 		JButton btnBenchStart = new JButton("BenchStart");
 		btnBenchStart.addMouseListener(new MouseAdapter() {
@@ -459,10 +485,6 @@ public class Benchmark extends JFrame {
 		});
 		btnBenchStart.setBounds(129, 672, 100, 30);
 		contentPane.add(btnBenchStart);
-		
-		txtBenchLog = new JTextField();
-		txtBenchLog.setBounds(12, 634, 214, 28);
-		contentPane.add(txtBenchLog);
 		
 		btnBenchAdd = new JButton("Add");
 		btnBenchAdd.addMouseListener(new MouseAdapter() {
@@ -481,13 +503,34 @@ public class Benchmark extends JFrame {
 		btnAdbCommandClr.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				modelAdbCommand.setRowCount(0);
+				//modelAdbCommand.setRowCount(0);
+				
+				BenchStart benchStart = new BenchStart();
+				benchStart.makeExcel();
 			}
 		});
 		btnAdbCommandClr.setBounds(66, 672, 55, 30);
 		contentPane.add(btnAdbCommandClr);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(12, 554, 217, 108);
+		contentPane.add(scrollPane_1);
+		
+		txtBenchResult = new JTextArea();
+		scrollPane_1.setViewportView(txtBenchResult);
+		txtBenchResult.setFont(UIManager.getFont("TextField.font"));
+		
+		btnExecwithfilter = new JButton("exFilter");
+		btnExecwithfilter.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				execWithFilter();
+			}
+		});
+		btnExecwithfilter.setBounds(1152, 144, 79, 30);
+		contentPane.add(btnExecwithfilter);
 	}
-	
+
 	public int getLocationX()
 	{
 		return getLocation().x;
@@ -781,19 +824,28 @@ public class Benchmark extends JFrame {
     		return;
     	}
     	
-    	for(int i = 0; i < modelAdbCommand.getRowCount(); i++)
-    	{
-    		String adbCommand = modelAdbCommand.getValueAt(i, 1).toString();
-    		String packageName = adbCommand.substring(adbCommand.indexOf("-n ") + 3, adbCommand.indexOf('/', adbCommand.indexOf("-n ") + 3));
-    		
-    		txtAdbCommand.setText(adbCommand);
-    		txtFilter.setText(packageName);
-    		
-    		LogcatClear();
-    		filterEvent();
-    		exec();
-    	}
+    	BenchStart benchStart = new BenchStart();
+    	benchStart.start(Benchmark.this);
 		
+    }
+    
+    public void execWithFilter()
+    {
+    	String Command = txtAdbCommand.getText().trim();
+    	
+    	if(Command.equals("") == true)
+		{
+			return;
+		}
+    	
+    	String packageName = Command.substring(Command.indexOf("-n ") + 3, Command.indexOf('/', Command.indexOf("-n ") + 3));
+		
+		txtFilter.setText(packageName);
+		
+		LogcatClear();
+		filterEvent();
+		
+		exec();
     }
     
     public void exec()
@@ -812,6 +864,38 @@ public class Benchmark extends JFrame {
 		
 		setisBusy(true);
 
+		command = adjustAdbCommand(command);
+
+		//adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
+		ExecuteShellCommand.executeCommand(Benchmark.this, command);
+		
+		setisBusy(false);
+    }
+    
+    public void exec(String command)
+    {
+		if(command.equals("") == true)
+		{
+			return;
+		}
+		
+		if(getisBusy() == true)										//Already processing
+		{
+			JOptionPane.showMessageDialog (null, "Now Processing...");
+			return;
+		}
+		
+		setisBusy(true);
+
+		command = adjustAdbCommand(command);
+
+		ExecuteShellCommand.executeCommand(Benchmark.this, command);
+		
+		setisBusy(false);
+    }
+    
+    public String adjustAdbCommand(String command)
+    {
 		if(command.substring(0, 3).equals("adb"))
 		{
 			
@@ -836,11 +920,7 @@ public class Benchmark extends JFrame {
 				command = txtAdbPath.getText().trim() + command;
 			}
 		}
-
-		//adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
-		ExecuteShellCommand.executeCommand(Benchmark.this, command);
 		
-		setisBusy(false);
+		return command;
     }
-
 }
