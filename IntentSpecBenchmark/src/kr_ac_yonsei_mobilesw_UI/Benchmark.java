@@ -48,6 +48,8 @@ import java.util.logging.Logger;
 
 import javax.swing.table.TableModel;
 
+import jxl.*;
+
 public class Benchmark extends JFrame {
 
 	private static final long serialVersionUID = -8114454317556683079L;
@@ -159,49 +161,7 @@ public class Benchmark extends JFrame {
 		btnStart.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
-				String command = txtAdbCommand.getText().trim();		//Don't have command
-				if(command.equals("") == true)
-				{
-					return;
-				}
-				
-				if(getisBusy() == true)										//Already processing
-				{
-					JOptionPane.showMessageDialog (null, "Now Processing...");
-					return;
-				}
-				
-				setisBusy(true);
-
-				if(command.substring(0, 3).equals("adb"))
-				{
-					
-					if(cboDeviceID.getSelectedItem() == null)
-					{
-						//none
-					}
-					else
-					{
-						String deviceID = cboDeviceID.getSelectedItem().toString().substring(cboDeviceID.getSelectedItem().toString().indexOf(":") + 1, cboDeviceID.getSelectedItem().toString().length());
-						command = command.replace("adb", "adb -s " + deviceID);
-						
-						logger.info("btnStart => DevicesID : " + deviceID + ", command : " + command);
-					}
-					
-					if(txtAdbPath.getText().trim().equals(""))
-					{
-						command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
-					}
-					else
-					{
-						command = txtAdbPath.getText().trim() + command;
-					}
-				}
-
-				//adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
-				ExecuteShellCommand.executeCommand(Benchmark.this, command);
-				
-				setisBusy(false);
+				exec();
 			}
 		});
 		btnStart.setBounds(1152, 144, 79, 30);
@@ -317,12 +277,9 @@ public class Benchmark extends JFrame {
 		txtFilter.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				LogcatLock.lock();
 				
-				NowTxtFilter = txtFilter.getText().trim();
-				showLogcat();
+				filterEvent();
 				
-				LogcatLock.unlock();
 			}
 		});
 		
@@ -333,13 +290,7 @@ public class Benchmark extends JFrame {
 		btnClear.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				LogcatLock.lock();
-				
-				modelLogcat.setRowCount(0);
-				modelLogcatView.setRowCount(0);
-				logcatReadStartIndex = 0;
-				
-				LogcatLock.unlock();
+				LogcatClear();
 			}
 		});
 		btnClear.setBounds(1131, 198, 49, 30);
@@ -489,6 +440,12 @@ public class Benchmark extends JFrame {
 		tblAdbCommand.getColumnModel().getColumn(1).setPreferredWidth(5000);
 		
 		JButton btnBenchStart = new JButton("BenchStart");
+		btnBenchStart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				benchStart();
+			}
+		});
 		btnBenchStart.setBounds(129, 672, 100, 30);
 		contentPane.add(btnBenchStart);
 		
@@ -784,4 +741,95 @@ public class Benchmark extends JFrame {
     {
     	return modelAdbCommand;
     }
+    
+    public void LogcatClear()
+    {
+    	LogcatLock.lock();
+    	
+    	modelLogcat.setRowCount(0);
+    	modelLogcatView.setRowCount(0);
+    	logcatReadStartIndex = 0;
+    	
+    	LogcatLock.unlock();
+    }
+    
+    public void filterEvent()
+    {
+    	LogcatLock.lock();
+		
+		NowTxtFilter = txtFilter.getText().trim();
+		showLogcat();
+		
+		LogcatLock.unlock();
+    }
+    
+    public void benchStart()
+    {
+    	if(modelAdbCommand.getRowCount() < 1)
+    	{
+    		return;
+    	}
+    	
+    	for(int i = 0; i < modelAdbCommand.getRowCount(); i++)
+    	{
+    		String adbCommand = modelAdbCommand.getValueAt(i, 1).toString();
+    		String packageName = adbCommand.substring(adbCommand.indexOf("-n ") + 3, adbCommand.indexOf('/', adbCommand.indexOf("-n ") + 3));
+    		
+    		txtAdbCommand.setText(adbCommand);
+    		txtFilter.setText(packageName);
+    		
+    		LogcatClear();
+    		filterEvent();
+    		exec();
+    	}
+		
+    }
+    
+    public void exec()
+    {
+		String command = txtAdbCommand.getText().trim();		//Don't have command
+		if(command.equals("") == true)
+		{
+			return;
+		}
+		
+		if(getisBusy() == true)										//Already processing
+		{
+			JOptionPane.showMessageDialog (null, "Now Processing...");
+			return;
+		}
+		
+		setisBusy(true);
+
+		if(command.substring(0, 3).equals("adb"))
+		{
+			
+			if(cboDeviceID.getSelectedItem() == null)
+			{
+				//none
+			}
+			else
+			{
+				String deviceID = cboDeviceID.getSelectedItem().toString().substring(cboDeviceID.getSelectedItem().toString().indexOf(":") + 1, cboDeviceID.getSelectedItem().toString().length());
+				command = command.replace("adb", "adb -s " + deviceID);
+				
+				logger.info("btnStart => DevicesID : " + deviceID + ", command : " + command);
+			}
+			
+			if(txtAdbPath.getText().trim().equals(""))
+			{
+				command = "D:/adt-bundle-windows-x86_64-20140702/sdk/platform-tools/" + command;
+			}
+			else
+			{
+				command = txtAdbPath.getText().trim() + command;
+			}
+		}
+
+		//adb shell am start -n com.enterpriseandroid.androidSecurity/.MainActivity -a android.intent.action.ERROR
+		ExecuteShellCommand.executeCommand(Benchmark.this, command);
+		
+		setisBusy(false);
+    }
+
 }

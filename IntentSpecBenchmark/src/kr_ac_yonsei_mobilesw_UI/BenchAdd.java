@@ -261,8 +261,6 @@ public class BenchAdd extends JFrame {
 	
 	public Object[] makeRow(int seq, String str)
 	{
-		//String packageName = str.substring(str.indexOf("-n ") + 3, str.indexOf('/', str.indexOf("-n ") + 3));
-		
 		Object[] row = new Object[]{String.valueOf(seq), str};
 		
 		return row;
