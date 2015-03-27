@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -45,6 +46,8 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.table.TableModel;
+
 public class Benchmark extends JFrame {
 
 	private static final long serialVersionUID = -8114454317556683079L;
@@ -72,9 +75,13 @@ public class Benchmark extends JFrame {
 	private DefaultTableModel modelLogcat;
 	private DefaultTableModel modelLogcatView;
 	private DefaultTableModel modelLogcatFilter;
+	private DefaultTableModel modelAdbCommand;
 	private JTextField txtFilter;
 	private JTextField txtAdbPath;
 	private JComboBox cboDeviceID;
+	private JTextField txtBenchLog;
+	private JButton btnBenchAdd;
+	private JTable tblAdbCommand;
 
 	/**
 	 * Launch the application.
@@ -210,6 +217,7 @@ public class Benchmark extends JFrame {
 		contentPane.add(scrollPane);
 		
 		txtAdbCommandLog = new JTextArea();
+		txtAdbCommandLog.setFont(UIManager.getFont("TextField.font"));
 		scrollPane.setViewportView(txtAdbCommandLog);
 		
 		scrollPaneLogcat = new JScrollPane();
@@ -263,7 +271,7 @@ public class Benchmark extends JFrame {
                 }
                 else if(getModel().getValueAt(row, 0).toString().equals("W"))
                 {
-                	comp.setForeground(new Color(255, 171, 58));
+                	comp.setForeground(new Color(255, 127, 0));
                 }
                 else if(getModel().getValueAt(row, 0).toString().equals("E"))
                 {
@@ -320,7 +328,6 @@ public class Benchmark extends JFrame {
 		
 		txtFilter.setBounds(241, 200, 661, 28);
 		contentPane.add(txtFilter);
-		txtFilter.setColumns(10);
 		
 		JButton btnClear = new JButton("Clr");
 		btnClear.addMouseListener(new MouseAdapter() {
@@ -428,7 +435,7 @@ public class Benchmark extends JFrame {
 				}
 				
 				setisBusy(true);
-				
+
 				cboDeviceID.removeAllItems();
 
 				if(txtAdbPath.getText().trim().equals(""))
@@ -441,14 +448,86 @@ public class Benchmark extends JFrame {
 				}
 				
 				ExecuteShellCommand.readDevice(Benchmark.this, command);
-				
+
 				setisBusy(false);
 				
 			}
 		});
-		btnReadDevice.setBounds(129, 126, 99, 30);
+		btnReadDevice.setBounds(130, 126, 99, 30);
 		contentPane.add(btnReadDevice);
 		
+		JScrollPane scrollPaneBench = new JScrollPane();
+		scrollPaneBench.setBounds(12, 172, 214, 456);
+		scrollPaneBench.getViewport().setBackground(Color.white);
+		contentPane.add(scrollPaneBench);
+		
+		modelAdbCommand = new DefaultTableModel();
+		modelAdbCommand.addColumn("Seq");
+		modelAdbCommand.addColumn("Command");
+		
+		tblAdbCommand = new JTable(modelAdbCommand){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component comp = super.prepareRenderer(renderer, row, column);
+                JComponent jc = (JComponent) comp;
+                comp.setForeground(Color.black);
+                
+                return comp;
+            }
+        };
+		tblAdbCommand.setShowVerticalLines(false);
+		tblAdbCommand.setShowHorizontalLines(false);
+		tblAdbCommand.setSelectionBackground(new Color(222, 237, 255));
+		tblAdbCommand.setRowHeight(23);
+		tblAdbCommand.setFont(new Font("Courier New", Font.PLAIN, 12));
+		tblAdbCommand.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		scrollPaneBench.setViewportView(tblAdbCommand);
+		
+		tblAdbCommand.getColumnModel().getColumn(0).setPreferredWidth(50);
+		tblAdbCommand.getColumnModel().getColumn(1).setPreferredWidth(5000);
+		
+		JButton btnBenchStart = new JButton("BenchStart");
+		btnBenchStart.setBounds(129, 672, 100, 30);
+		contentPane.add(btnBenchStart);
+		
+		txtBenchLog = new JTextField();
+		txtBenchLog.setBounds(12, 634, 214, 28);
+		contentPane.add(txtBenchLog);
+		
+		btnBenchAdd = new JButton("Add");
+		btnBenchAdd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				BenchAdd benchAdd = new BenchAdd(Benchmark.this);
+				benchAdd.setLocation(getLocationX(), getLocationY());
+				benchAdd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				benchAdd.setVisible(true);
+			}
+		});
+		btnBenchAdd.setBounds(12, 672, 55, 30);
+		contentPane.add(btnBenchAdd);
+		
+		JButton btnAdbCommandClr = new JButton("Clr");
+		btnAdbCommandClr.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				modelAdbCommand.setRowCount(0);
+			}
+		});
+		btnAdbCommandClr.setBounds(66, 672, 55, 30);
+		contentPane.add(btnAdbCommandClr);
+	}
+	
+	public int getLocationX()
+	{
+		return getLocation().x;
+	}
+	
+	public int getLocationY()
+	{
+		return getLocation().y;
 	}
 	
 	public void appendTxt_adbCommandLog(String str)
@@ -699,5 +778,10 @@ public class Benchmark extends JFrame {
     	//logger.info("showDeviceList => DevicesID : " + DevicesID + ", model : "  + model + ", raw : " + deviceText);
     	
     	cboDeviceID.addItem(model + ":" + DevicesID);
+    }
+    
+    public DefaultTableModel getModelAdbCommand()
+    {
+    	return modelAdbCommand;
     }
 }

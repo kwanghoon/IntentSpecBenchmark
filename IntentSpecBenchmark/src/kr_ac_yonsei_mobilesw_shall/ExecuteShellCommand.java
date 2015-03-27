@@ -12,7 +12,7 @@ public class ExecuteShellCommand {
 		{
 			public void run()
 			{
-				Process p;
+				Process p = null;
 				try {					
 					p = Runtime.getRuntime().exec(command);
 					
@@ -38,6 +38,8 @@ public class ExecuteShellCommand {
 				{
 					e.printStackTrace();
 				}
+				
+				p.destroy();
 			}
 		};
 		
@@ -85,23 +87,33 @@ public class ExecuteShellCommand {
 		{
 			public void run()
 			{
-				Process p;
-				try {					
-					p = Runtime.getRuntime().exec(command);
+				Process p = null;
+				try {
 					
-					while(p.isAlive())
+					for(int i = 0; i < 3; i ++)
 					{
-						BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-						String line = "";
+						p = Runtime.getRuntime().exec(command);
 						
-						while ((line = reader.readLine())!= null) 
+						while(p.isAlive())
 						{
-							if(line.equals("") == false)
+							if(i == 2)
 							{
-								ui.showDeviceList(line);
+								BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+								String line = "";
+								
+								while ((line = reader.readLine())!= null) 
+								{
+									if(line.equals("") == false)
+									{
+										ui.showDeviceList(line);
+									}
+								}
 							}
 						}
 					}
+					
+					p.destroy();
+					
 				}
 				catch (Exception e)
 				{
