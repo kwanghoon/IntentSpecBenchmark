@@ -35,6 +35,7 @@ import javax.swing.DefaultComboBoxModel;
 
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -88,6 +89,8 @@ public class Benchmark extends JFrame {
 	private JTable tblAdbCommand;
 	JTextArea txtBenchResult;
 	private JButton btnExecwithfilter;
+	
+	HashMap<String, String> mapPidToApplicationName = new HashMap<String, String>();
 
 	/**
 	 * Launch the application.
@@ -572,13 +575,45 @@ public class Benchmark extends JFrame {
 	{
 		Object[] row = null;
 		
+		
+		//mapPidToApplicationName
 		try
 		{
+			if(str.indexOf("Start proc ") != -1)
+			{
+				int idx = str.indexOf("Start proc ");
+				
+				if(str.indexOf("pid=") != -1)
+				{
+					String pid = str.substring(str.indexOf("pid=") + 4, str.indexOf(" ", str.indexOf("pid=") + 4));
+					String applicationName = str.substring(str.indexOf("Start proc ") + 11, str.indexOf(" ", str.indexOf("Start proc ") + 11));
+					
+					String orgApplicationName = mapPidToApplicationName.get(pid);
+					if(orgApplicationName == null)
+					{
+						mapPidToApplicationName.put(pid, applicationName);						
+					}
+					else
+					{
+						mapPidToApplicationName.remove(pid);
+						mapPidToApplicationName.put(pid, applicationName);	
+					}
+				}
+			}
+			
 			String level = str.substring(31, 32);
 			String time = str.substring(0, 18);
 			String pid = str.substring(19, 24).trim();
 			String tid = str.substring(25, 30).trim();
+			int endOfTag = str.indexOf(':', 33);
+			String tag = str.substring(33, endOfTag);
+			String text = str.substring(endOfTag + 2, str.length());
 			
+			String ApplicationName = mapPidToApplicationName.get(pid);
+			if(ApplicationName != null)
+			{
+				str = str + " id:" + ApplicationName + " ";
+			}
 			int startOfId = str.indexOf(" id:");
 			String application = "";
 			if(startOfId != -1)
@@ -586,9 +621,6 @@ public class Benchmark extends JFrame {
 				int endOfId = str.indexOf(' ', startOfId + 5);
 				application = str.substring(startOfId + 4, endOfId).trim();
 			}
-			int endOfTag = str.indexOf(':', 33);
-			String tag = str.substring(33, endOfTag);
-			String text = str.substring(endOfTag + 2, str.length());
 			
 			row = new Object[]{level, time, pid, tid, application, tag, text, str};
 		}

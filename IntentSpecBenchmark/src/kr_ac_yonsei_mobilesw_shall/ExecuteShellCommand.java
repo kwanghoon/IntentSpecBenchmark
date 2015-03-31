@@ -3,6 +3,7 @@ package kr_ac_yonsei_mobilesw_shall;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import kr_ac_yonsei_mobilesw_UI.BenchAdd;
 import kr_ac_yonsei_mobilesw_UI.Benchmark;
 
 public class ExecuteShellCommand {
@@ -124,5 +125,43 @@ public class ExecuteShellCommand {
 		
 		worker.start();
 	}
-
+		
+	public static void executeMakeAdbCommand(BenchAdd ui, String command) 
+	{		
+		Thread worker = new Thread()
+		{
+			public void run()
+			{
+				Process p = null;
+				try {					
+					p = Runtime.getRuntime().exec(command);
+					
+					//ui.appendTxt_adbCommand("> " + command);
+					
+					while(p.isAlive())
+					{
+						BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						String line = "";
+						
+						while ((line = reader.readLine())!= null) 
+						{
+							if(line.equals("") == false)
+							{
+								ui.appendTxt_adbCommand(line + "\n");
+							}
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				
+				p.destroy();
+			}
+		};
+		
+		worker.start();
+	}
+	
 }

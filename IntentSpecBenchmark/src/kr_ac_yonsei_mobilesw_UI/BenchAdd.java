@@ -19,10 +19,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Random;
+
 import javax.swing.JSplitPane;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+
+import kr_ac_yonsei_mobilesw_shall.ExecuteShellCommand;
 
 public class BenchAdd extends JFrame {
 
@@ -30,6 +34,9 @@ public class BenchAdd extends JFrame {
 	private static Benchmark benchmarkUI;
 	private JTextArea txtAdbCommand;
 	private JTextField txtIntentSpec;
+	private JTextField txtCount;
+	private JComboBox cboComponent;
+	private JComboBox cboMakeMode;
 
 	/**
 	 * Launch the application.
@@ -65,7 +72,7 @@ public class BenchAdd extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-		scrollPane.setBounds(12, 50, 1219, 612);
+		scrollPane.setBounds(12, 71, 1219, 591);
 		contentPane.add(scrollPane);
 		
 		txtAdbCommand = new JTextArea();
@@ -92,23 +99,75 @@ public class BenchAdd extends JFrame {
 		btnCancel.setBounds(1132, 672, 99, 30);
 		contentPane.add(btnCancel);
 		
-		JComboBox cboComponent = new JComboBox();
+		cboComponent = new JComboBox();
 		cboComponent.setModel(new DefaultComboBoxModel(new String[] {"Activity", "Broadcast Receiver", "Service"}));
-		cboComponent.setBounds(991, 10, 129, 30);
+		cboComponent.setBounds(158, 31, 129, 30);
 		contentPane.add(cboComponent);
 		
 		JButton btnMake = new JButton("make");
-		btnMake.setBounds(1132, 10, 99, 30);
+		btnMake.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				
+				String command = System.getProperty("user.dir") + "/makeAdbCommand.exe "; 
+				
+				
+				String intentSepc = txtIntentSpec.getText();
+				if(intentSepc.charAt(0) != '"')
+				{
+					intentSepc = "\"" + intentSepc;
+				}
+				if(intentSepc.charAt(intentSepc.length() - 1) != '"')
+				{
+					intentSepc = intentSepc + "\""; 
+				}
+				
+				command = command + cboMakeMode.getSelectedIndex() + " " +
+								    cboComponent.getSelectedIndex() + " " +
+								    txtCount.getText() + " " +
+								    intentSepc + " ";
+				
+				ExecuteShellCommand.executeMakeAdbCommand(BenchAdd.this, command);
+			}
+		});
+		btnMake.setBounds(1132, 31, 99, 30);
 		contentPane.add(btnMake);
 		
 		txtIntentSpec = new JTextField();
-		txtIntentSpec.setBounds(12, 12, 821, 28);
+		txtIntentSpec.setBounds(487, 33, 639, 28);
 		contentPane.add(txtIntentSpec);
 		
-		JComboBox cboMakeMode = new JComboBox();
+		cboMakeMode = new JComboBox();
 		cboMakeMode.setModel(new DefaultComboBoxModel(new String[] {"PassOnly", "RandomUsingSpec", "Random"}));
-		cboMakeMode.setBounds(845, 10, 134, 30);
+		cboMakeMode.setBounds(12, 31, 134, 30);
 		contentPane.add(cboMakeMode);
+		
+		txtCount = new JTextField();
+		txtCount.setBounds(299, 33, 176, 28);
+		contentPane.add(txtCount);
+		txtCount.setColumns(10);
+		
+		JLabel lblMakemode = new JLabel("Mode : ");
+		lblMakemode.setBounds(12, 10, 75, 20);
+		contentPane.add(lblMakemode);
+		
+		JLabel lblComponent = new JLabel("Component : ");
+		lblComponent.setBounds(159, 10, 89, 20);
+		contentPane.add(lblComponent);
+		
+		JLabel lblCount = new JLabel("Count :");
+		lblCount.setBounds(299, 10, 75, 20);
+		contentPane.add(lblCount);
+		
+		JLabel lblIntentspec = new JLabel("IntentSpec :");
+		lblIntentspec.setBounds(487, 10, 82, 20);
+		contentPane.add(lblIntentspec);
+	}
+	
+	public void appendTxt_adbCommand(String str)
+	{
+		txtAdbCommand.append(str);
+		txtAdbCommand.setCaretPosition(txtAdbCommand.getCaretPosition() + str.length());
 	}
 	
 	public void Close()
@@ -195,7 +254,7 @@ public class BenchAdd extends JFrame {
 				else if(spToken[k].equals("--eia"))
 				{
 					try{
-						Integer.parseInt(spToken[k + 2]);
+						Integer.parseInt(spToken[k + 2].replace(",", ""));
 					}
 					catch(NumberFormatException e)
 					{
@@ -205,7 +264,7 @@ public class BenchAdd extends JFrame {
 				else if(spToken[k].equals("--ela"))
 				{
 					try{
-						Long.parseLong(spToken[k + 2]);
+						Long.parseLong(spToken[k + 2].replace(",", ""));
 					}
 					catch(NumberFormatException e)
 					{
@@ -215,7 +274,7 @@ public class BenchAdd extends JFrame {
 				else if(spToken[k].equals("--efa"))
 				{
 					try{
-						Float.parseFloat(spToken[k + 2]);
+						Float.parseFloat(spToken[k + 2].replace(",", ""));
 					}
 					catch(NumberFormatException e)
 					{

@@ -67,7 +67,7 @@ public class BenchStart {
 					ui.filterEvent();
 					ui.exec();
 					try {
-						Thread.currentThread().sleep(5000);
+						Thread.currentThread().sleep(3000);
 					} catch (InterruptedException e) {
 						
 					}
@@ -111,7 +111,7 @@ public class BenchStart {
 							+ "\nResult Count \t: " + (ForceFinishing + Finishing + ForceRemoving + Displayed + CantAnalyze));
 					
 					addRowinExcel("result : " + result);
-					addRowinExcel("--");
+					addRowinExcel("------------------------------------------------------------");
 				}
 				
 				String resultAll = "Force finishing \t: " + ForceFinishing
