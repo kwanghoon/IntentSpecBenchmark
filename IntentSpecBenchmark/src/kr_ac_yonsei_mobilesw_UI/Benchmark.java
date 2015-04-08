@@ -424,7 +424,7 @@ public class Benchmark extends JFrame {
 		contentPane.add(btnReadDevice);
 		
 		JScrollPane scrollPaneBench = new JScrollPane();
-		scrollPaneBench.setBounds(12, 172, 217, 372);
+		scrollPaneBench.setBounds(12, 172, 217, 280);
 		scrollPaneBench.getViewport().setBackground(Color.white);
 		contentPane.add(scrollPaneBench);
 		
@@ -443,21 +443,33 @@ public class Benchmark extends JFrame {
                 
                 String result = getModel().getValueAt(row, 2).toString();
                 
-                if(result.equals("Force finishing"))
+                if(result.equals("Normal"))
                 {
-                	comp.setForeground(new Color(255, 0, 0));
+                	comp.setForeground(new Color(0, 0, 127));
                 }
-                else if(result.equals("Finishing"))
-                {
-                	comp.setForeground(new Color(255, 127, 0));
-                }
-                else if(result.equals("Force removing"))
+                else if(result.equals("Exit"))
                 {
                 	comp.setForeground(new Color(0, 127, 0));
                 }
-                else if(result.equals("Displayed"))
+                else if(result.equals("ErrorExit"))
+                {
+                	comp.setForeground(new Color(255, 0, 0));
+                }
+                else if(result.equals("IntentSpecCatch"))
+                {
+                	comp.setForeground(new Color(255, 127, 0));
+                }	
+                else if(result.equals("IntentSpecPassAndNormal"))
                 {
                 	comp.setForeground(new Color(0, 0, 127));
+                }	
+                else if(result.equals("IntentSpecPassAndExit"))
+                {
+                	comp.setForeground(new Color(0, 127, 0));
+                }	
+                else if(result.equals("IntentSpecPassAndErrorExit"))
+                {
+                	comp.setForeground(new Color(255, 0, 0));
                 }	
                 else
                 {
@@ -513,7 +525,7 @@ public class Benchmark extends JFrame {
 		contentPane.add(btnAdbCommandClr);
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(12, 554, 217, 108);
+		scrollPane_1.setBounds(12, 454, 217, 208);
 		contentPane.add(scrollPane_1);
 		
 		txtBenchResult = new JTextArea();

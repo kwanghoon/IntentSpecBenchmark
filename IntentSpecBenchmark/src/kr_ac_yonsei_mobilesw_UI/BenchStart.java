@@ -35,10 +35,13 @@ public class BenchStart {
 			{
 				makeExcel();
 				
-				int ForceFinishing = 0;
-				int Finishing = 0;
-				int ForceRemoving = 0;
-				int Displayed = 0;
+				int Normal = 0;
+				int Exit = 0;
+				int ErrorExit = 0;
+				int IntentSpecCatch = 0;
+				int IntentSpecPassAndNormal = 0;
+				int IntentSpecPassAndExit = 0;
+				int IntentSpecPassAndErrorExit = 0;
 				int CantAnalyze = 0;
 				
 				
@@ -51,6 +54,21 @@ public class BenchStart {
 				{
 					String adbCommand = ui.modelAdbCommand.getValueAt(i, 1).toString();
 					String packageName = adbCommand.substring(adbCommand.indexOf("-n ") + 3, adbCommand.indexOf('/', adbCommand.indexOf("-n ") + 3));
+					
+					ComponentMode mode;
+					
+					if(adbCommand.contains("shell am start"))
+					{
+						mode = ComponentMode.Activity;
+					}
+					else if(adbCommand.contains("shell am broadcast"))
+					{
+						mode = ComponentMode.BroadcastReceiver;
+					}
+					else				//else if(adbCommand.contains("shell am startservice"))
+					{
+						mode = ComponentMode.Service;
+					}
 					
 					ui.exec("adb shell am force-stop " + packageName);
 					try {
@@ -72,54 +90,100 @@ public class BenchStart {
 						
 					}
 					
+					boolean normalCommand = false;
 					String[] spLine = ui.txtAdbCommandLog.getText().split("\n");
 					for(int k = 0; k < spLine.length; k++)
 					{
 						addRowinExcel(spLine[k]);
+						if(mode == ComponentMode.Activity)
+						{
+							if(spLine[k].contains("Starting: Intent"))
+							{
+								normalCommand = true;
+							}
+						}
+						else if(mode == ComponentMode.BroadcastReceiver)
+						{
+							if(spLine[k].contains("Broadcasting: Intent"))
+							{
+								normalCommand = true;
+							}
+						}
+						else if(mode == ComponentMode.Service)
+						{
+							if(spLine[k].contains("Starting service: Intent"))
+							{
+								normalCommand = true;
+							}
+						}
 					}
 					
-					String result = benchResult(ui, packageName);
+					AnalyzeResult result = benchResult(ui, packageName, mode);
 					ui.modelAdbCommand.setValueAt(result, i, 2);
 					ui.modelAdbCommand.fireTableDataChanged();
 					
-					if(result.equals("Force finishing"))
+					if(normalCommand == true)
 					{
-						ForceFinishing++;
+						if(result == AnalyzeResult.Normal)
+						{
+							Normal++;
+						}
+						else if(result == AnalyzeResult.Exit)
+						{
+							Exit++;
+						}
+						else if(result == AnalyzeResult.ErrorExit)
+						{
+							ErrorExit++;
+						}
+						else if(result == AnalyzeResult.IntentSpecCatch)
+						{
+							IntentSpecCatch++;
+						}
+						else if(result == AnalyzeResult.IntentSpecPassAndNormal)
+						{
+							IntentSpecPassAndNormal++;
+						}
+						else if(result == AnalyzeResult.IntentSpecPassAndExit)
+						{
+							IntentSpecPassAndExit++;
+						}
+						else if(result == AnalyzeResult.IntentSpecPassAndErrorExit)
+						{
+							IntentSpecPassAndErrorExit++;
+						}
 					}
-					else if(result.equals("Finishing"))
-					{
-						Finishing++;
-					}
-					else if(result.equals("Force removing"))
-					{
-						ForceRemoving++;
-					}
-					else if(result.equals("Displayed"))
-					{
-						Displayed++;
-					}
-					else if(result.equals("can't analyze"))
+					else
 					{
 						CantAnalyze++;
 					}
+				
 					
-					ui.txtBenchResult.setText("Force finishing \t: " + ForceFinishing
-							+ "\nFinishing \t: " + Finishing 
-							+ "\nForce removing: " + ForceRemoving
-							+ "\nDisplayed \t: " + Displayed
-							+ "\nCan't analyze \t: " + CantAnalyze 
-							+ "\nResult Count \t: " + (ForceFinishing + Finishing + ForceRemoving + Displayed + CantAnalyze));
+					ui.txtBenchResult.setText("정상실행\t\t: " + Normal
+							+ "\n정상종료\t\t: " + Exit 
+							+ "\n비정상종료\t\t: " + ErrorExit
+							+ "\n인텐트 스펙에서 검출 \t: " + IntentSpecCatch
+							+ "\n인텐트 스펙패스 후 정상실행\t: " + IntentSpecPassAndNormal 
+							+ "\n인텐트 스펙패스 후 정상종료\t: " + IntentSpecPassAndExit 
+							+ "\n인텐트 스펙패스 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
+							+ "\n분석 실패\t\t: " + CantAnalyze
+							+ "\nResult Count\t\t: " + (Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
+									+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze));
 					
-					addRowinExcel("result : " + result);
+					addRowinExcel("result : " + result.toString());
 					addRowinExcel("------------------------------------------------------------");
 				}
 				
-				String resultAll = "Force finishing \t: " + ForceFinishing
-				+ "\nFinishing \t: " + Finishing 
-				+ "\nForce removing: " + ForceRemoving
-				+ "\nDisplayed \t: " + Displayed
-				+ "\nCan't analyze \t: " + CantAnalyze 
-				+ "\nResult Count \t: " + (ForceFinishing + Finishing + ForceRemoving + Displayed + CantAnalyze);
+				String resultAll = "정상실행\t\t: " + Normal
+						+ "\n정상종료\t\t: " + Exit 
+						+ "\n비정상종료\t\t: " + ErrorExit
+						+ "\n인텐트 스펙에서 검출 \t: " + IntentSpecCatch
+						+ "\n인텐트 스펙패스 후 정상실행\t: " + IntentSpecPassAndNormal 
+						+ "\n인텐트 스펙패스 후 정상종료\t: " + IntentSpecPassAndExit 
+						+ "\n인텐트 스펙패스 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
+						+ "\n분석 실패\t\t: " + CantAnalyze
+						+ "\nResult Count\t\t: " + (Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
+								+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze);
 				
 				String[] resultAllLine = resultAll.split("\n");
 				
@@ -191,9 +255,11 @@ public class BenchStart {
 		}
 	}
 	
-    public String benchResult(Benchmark ui, String filter)
+    public AnalyzeResult benchResult(Benchmark ui, String filter, ComponentMode mode)
     {
-    	String result = "";
+    	AnalyzeResult result = AnalyzeResult.CantAnalyze;
+    	int IntentSpecFlag = 0;		//0 : NonIntentSpec, 1 : IntentSpecCatch, 2 : IntentSpecPass
+    	int ProgramState = 0;		//0 : Normal, 1 : Exit, 2 : ErrorExit
     	
     	ui.LogcatLock.lock();
 		
@@ -234,30 +300,89 @@ public class BenchStart {
 				
 				String rawLog = ui.modelLogcatView.getValueAt(i, 7).toString();
 				
-				if(rawLog.toString().contains("Force finishing"))
+				if(mode == ComponentMode.Activity)
 				{
-					result = "Force finishing";
-					analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.RED);
-				}
-				else if(rawLog.toString().contains("Finishing"))
-				{
-					result = "Finishing";
-					analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
-				}
-				else if(rawLog.toString().contains("Force removing"))
-				{
-					result = "Force removing";
-					analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_GREEN);
-				}
-				else if(rawLog.toString().contains("Displayed"))
-				{
-					result = "Displayed";
-					analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_BLUE);
-				}
-				else
-				{
+					if(rawLog.toString().contains("Force finishing"))
+					{
+						ProgramState = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.RED);
+					}
+					else if(rawLog.toString().contains("Finishing"))
+					{
+						ProgramState = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
+					}
+					else if(rawLog.toString().contains("Force removing"))
+					{
+						ProgramState = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_GREEN);
+					}
+					else if(rawLog.toString().contains("Displayed"))
+					{
+						ProgramState = 0;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_BLUE);
+					}
+					else
+					{
 
+					}
+					
+					if(rawLog.toString().contains("IntentSpec: Error Catch"))
+					{
+						IntentSpecFlag = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
+					}
+					else if(rawLog.toString().contains("IntentSpec: Pass"))
+					{
+						IntentSpecFlag = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_BLUE);
+					}
+					
 				}
+				else if(mode == ComponentMode.BroadcastReceiver)
+				{
+					if(rawLog.toString().contains("has died"))
+					{
+						ProgramState = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.RED);
+					}
+					
+					if(rawLog.toString().contains("IntentSpec: Error Catch"))
+					{
+						IntentSpecFlag = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
+					}
+					else if(rawLog.toString().contains("IntentSpec: Pass"))
+					{
+						IntentSpecFlag = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_BLUE);
+					}
+				}
+				else if(mode == ComponentMode.Service)
+				{
+					if(rawLog.toString().contains("Shutting down VM"))
+					{
+						ProgramState = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.RED);
+					}
+					else if(rawLog.toString().contains("VM exiting with result code"))
+					{
+						ProgramState = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
+					}
+					
+					if(rawLog.toString().contains("IntentSpec: Error Catch"))
+					{
+						IntentSpecFlag = 1;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.ORANGE);
+					}
+					else if(rawLog.toString().contains("IntentSpec: Pass"))
+					{
+						IntentSpecFlag = 2;
+						analysisFormat.setBorder(Border.BOTTOM, BorderLineStyle.THICK, Colour.LIGHT_BLUE);
+					}
+				}
+				
 				
 				int nowRow = sheet.getRows();
 				
@@ -272,9 +397,39 @@ public class BenchStart {
 				
 			}
 			
-			if(result.equals(""))
+			if(IntentSpecFlag == 0)
 			{
-				result = "can't analyze";
+				if(ProgramState == 0)
+				{
+					result = AnalyzeResult.Normal;
+				}
+				else if(ProgramState == 1)
+				{
+					result = AnalyzeResult.Exit;
+				}
+				else if(ProgramState == 2)
+				{
+					result = AnalyzeResult.ErrorExit;
+				}
+			}
+			else if(IntentSpecFlag == 1)
+			{
+				result = AnalyzeResult.IntentSpecCatch;
+			}
+			else if(IntentSpecFlag == 2)
+			{
+				if(ProgramState == 0)
+				{
+					result = AnalyzeResult.IntentSpecPassAndNormal;
+				}
+				else if(ProgramState == 1)
+				{
+					result = AnalyzeResult.IntentSpecPassAndExit;
+				}
+				else if(ProgramState == 2)
+				{
+					result = AnalyzeResult.IntentSpecPassAndErrorExit;
+				}
 			}
 		
 		} catch (WriteException e) {
