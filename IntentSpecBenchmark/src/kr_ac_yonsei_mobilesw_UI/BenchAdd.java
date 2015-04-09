@@ -27,6 +27,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 
 import kr_ac_yonsei_mobilesw_shall.ExecuteShellCommand;
+import javax.swing.JCheckBox;
 
 public class BenchAdd extends JFrame {
 
@@ -37,6 +38,7 @@ public class BenchAdd extends JFrame {
 	private JTextField txtCount;
 	private JComboBox cboComponent;
 	private JComboBox cboMakeMode;
+	private JCheckBox chkExtraValueReplace;
 
 	/**
 	 * Launch the application.
@@ -162,6 +164,11 @@ public class BenchAdd extends JFrame {
 		JLabel lblIntentspec = new JLabel("IntentSpec :");
 		lblIntentspec.setBounds(487, 10, 82, 20);
 		contentPane.add(lblIntentspec);
+		
+		chkExtraValueReplace = new JCheckBox("ExtraValueReplace");
+		chkExtraValueReplace.setSelected(true);
+		chkExtraValueReplace.setBounds(879, 676, 134, 23);
+		contentPane.add(chkExtraValueReplace);
 	}
 	
 	public void appendTxt_adbCommand(String str)
@@ -208,39 +215,60 @@ public class BenchAdd extends JFrame {
 				}
 				else if(spToken[k].equals("--ez"))
 				{
-					if(spToken[k + 2].equals("true") == false && spToken[k + 2].equals("false") == false)
+					if(spToken[k + 2].equalsIgnoreCase("true") == false && spToken[k + 2].equalsIgnoreCase("false") == false)
 					{
 						spToken[k + 2] = String.valueOf(rand.nextBoolean());						
 					}
 				}
 				else if(spToken[k].equals("--ei"))
 				{
-					try{
-						Integer.parseInt(spToken[k + 2]);
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = String.valueOf(rand.nextInt());
+					}
+					else
+					{
+						try{
+							Integer.parseInt(spToken[k + 2]);
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = String.valueOf(rand.nextInt());
+						}
 					}
 				}
 				else if(spToken[k].equals("--el"))
 				{
-					try{
-						Long.parseLong(spToken[k + 2]);
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = String.valueOf(rand.nextLong());
+					}
+					else
+					{
+						try{
+							Long.parseLong(spToken[k + 2]);
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = String.valueOf(rand.nextLong());
+						}
 					}
 				}
 				else if(spToken[k].equals("--ef"))
 				{
-					try{
-						Float.parseFloat(spToken[k + 2]);
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = String.valueOf(rand.nextFloat());
+					}
+					else
+					{
+						try{
+							Float.parseFloat(spToken[k + 2]);
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = String.valueOf(rand.nextFloat());
+						}
 					}
 				}
 				else if(spToken[k].equals("--eu"))
@@ -253,32 +281,53 @@ public class BenchAdd extends JFrame {
 				}
 				else if(spToken[k].equals("--eia"))
 				{
-					try{
-						Integer.parseInt(spToken[k + 2].replace(",", ""));
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = randomIntArray();
+					}
+					else
+					{
+						try{
+							Integer.parseInt(spToken[k + 2].replace(",", ""));
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = randomIntArray();
+						}
 					}
 				}
 				else if(spToken[k].equals("--ela"))
 				{
-					try{
-						Long.parseLong(spToken[k + 2].replace(",", ""));
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = randomLongArray();
+					}
+					else
+					{
+						try{
+							Long.parseLong(spToken[k + 2].replace(",", ""));
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = randomLongArray();
+						}
 					}
 				}
 				else if(spToken[k].equals("--efa"))
 				{
-					try{
-						Float.parseFloat(spToken[k + 2].replace(",", ""));
-					}
-					catch(NumberFormatException e)
+					if(chkExtraValueReplace.isSelected() == true)
 					{
 						spToken[k + 2] = randomfloatArray();
+					}
+					else
+					{
+						try{
+							Float.parseFloat(spToken[k + 2].replace(",", ""));
+						}
+						catch(NumberFormatException e)
+						{
+							spToken[k + 2] = randomfloatArray();
+						}
 					}
 				}
 			}
