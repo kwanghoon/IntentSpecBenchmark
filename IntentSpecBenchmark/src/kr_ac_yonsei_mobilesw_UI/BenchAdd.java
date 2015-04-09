@@ -39,6 +39,7 @@ public class BenchAdd extends JFrame {
 	private JComboBox cboComponent;
 	private JComboBox cboMakeMode;
 	private JCheckBox chkExtraValueReplace;
+	private Random rand = new Random(System.currentTimeMillis());
 
 	/**
 	 * Launch the application.
@@ -198,8 +199,6 @@ public class BenchAdd extends JFrame {
 	
 	public String[] parseStr(String str)
 	{
-		Random rand = new Random(System.currentTimeMillis());
-		
 		String[] spLine = str.split("\n");
 		
 		for(int i = 0; i < spLine.length; i++)
@@ -345,15 +344,14 @@ public class BenchAdd extends JFrame {
 	
 	public String randomIntArray()
 	{
-		Random rand = new Random(System.currentTimeMillis());
 		String intArray = "";
 		
-		int count = (rand.nextInt() % 10) + 1;
+		int count = rand.nextInt((15 - 1) + 1) + 1;
 		
 		intArray = String.valueOf(rand.nextInt());
 		for(int i = 1; i < count; i++)
 		{
-			intArray += ", " + rand.nextInt();
+			intArray += "," + rand.nextInt();
 		}
 		
 		return intArray;
@@ -361,15 +359,14 @@ public class BenchAdd extends JFrame {
 	
 	public String randomLongArray()
 	{
-		Random rand = new Random(System.currentTimeMillis());
 		String longArray = "";
 		
-		int count = (rand.nextInt() % 10) + 1;
+		int count = rand.nextInt((15 - 1) + 1) + 1;
 		
 		longArray = String.valueOf(rand.nextLong());
 		for(int i = 1; i < count; i++)
 		{
-			longArray += ", " + rand.nextLong();
+			longArray += "," + rand.nextLong();
 		}
 		
 		return longArray;
@@ -377,15 +374,14 @@ public class BenchAdd extends JFrame {
 	
 	public String randomfloatArray()
 	{
-		Random rand = new Random(System.currentTimeMillis());
 		String floatArray = "";
 		
-		int count = (rand.nextInt() % 10) + 1;
+		int count = rand.nextInt((15 - 1) + 1) + 1;
 		
 		floatArray = String.valueOf(rand.nextFloat());
 		for(int i = 1; i < count; i++)
 		{
-			floatArray += ", " + rand.nextFloat();
+			floatArray += "," + rand.nextFloat();
 		}
 		
 		return floatArray;

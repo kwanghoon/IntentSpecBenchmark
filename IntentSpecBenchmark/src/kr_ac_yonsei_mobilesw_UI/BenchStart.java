@@ -158,6 +158,8 @@ public class BenchStart {
 						CantAnalyze++;
 					}
 				
+					int resultCount = Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
+							+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze;
 					
 					ui.txtBenchResult.setText("정상실행\t\t: " + Normal
 							+ "\n정상종료\t\t: " + Exit 
@@ -167,8 +169,7 @@ public class BenchStart {
 							+ "\n인텐트 스펙패스 후 정상종료\t: " + IntentSpecPassAndExit 
 							+ "\n인텐트 스펙패스 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
 							+ "\n분석 실패\t\t: " + CantAnalyze
-							+ "\nResult Count\t\t: " + (Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
-									+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze));
+							+ "\n진행률\t: " + (int)(((double)resultCount / ui.modelAdbCommand.getRowCount()) * 100) + "% (" + (resultCount + "/" + ui.modelAdbCommand.getRowCount() + ")"));
 					
 					addRowinExcel("result : " + result.toString());
 					addRowinExcel("------------------------------------------------------------");
