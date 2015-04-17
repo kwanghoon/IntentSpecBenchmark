@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jxl.*;
 import jxl.format.BoldStyle;
@@ -25,10 +28,10 @@ import jxl.write.WriteException;
 public class BenchStart {
 
 	WritableWorkbook workbook;
-	WritableSheet sheet;
+	WritableSheet sheet;	
 	
 	public void start(Benchmark ui) 
-	{
+	{		
 		Thread worker = new Thread()
 		{
 			public void run()
@@ -118,7 +121,7 @@ public class BenchStart {
 						}
 					}
 					
-					AnalyzeResult result = benchResult(ui, packageName, mode);
+					AnalyzeResult result = benchResult(ui, packageName, mode, normalCommand);
 					ui.modelAdbCommand.setValueAt(result, i, 2);
 					ui.modelAdbCommand.fireTableDataChanged();
 					
@@ -256,7 +259,7 @@ public class BenchStart {
 		}
 	}
 	
-    public AnalyzeResult benchResult(Benchmark ui, String filter, ComponentMode mode)
+    public AnalyzeResult benchResult(Benchmark ui, String filter, ComponentMode mode, boolean normalCommand)
     {
     	AnalyzeResult result = AnalyzeResult.CantAnalyze;
     	int IntentSpecFlag = 0;		//0 : NonIntentSpec, 1 : IntentSpecCatch, 2 : IntentSpecPass
@@ -398,40 +401,48 @@ public class BenchStart {
 				
 			}
 			
-			if(IntentSpecFlag == 0)
+			if(normalCommand == true)
 			{
-				if(ProgramState == 0)
+				if(IntentSpecFlag == 0)
 				{
-					result = AnalyzeResult.Normal;
+					if(ProgramState == 0)
+					{
+						result = AnalyzeResult.Normal;
+					}
+					else if(ProgramState == 1)
+					{
+						result = AnalyzeResult.Exit;
+					}
+					else if(ProgramState == 2)
+					{
+						result = AnalyzeResult.ErrorExit;
+					}
 				}
-				else if(ProgramState == 1)
+				else if(IntentSpecFlag == 1)
 				{
-					result = AnalyzeResult.Exit;
+					result = AnalyzeResult.IntentSpecCatch;
 				}
-				else if(ProgramState == 2)
+				else if(IntentSpecFlag == 2)
 				{
-					result = AnalyzeResult.ErrorExit;
+					if(ProgramState == 0)
+					{
+						result = AnalyzeResult.IntentSpecPassAndNormal;
+					}
+					else if(ProgramState == 1)
+					{
+						result = AnalyzeResult.IntentSpecPassAndExit;
+					}
+					else if(ProgramState == 2)
+					{
+						result = AnalyzeResult.IntentSpecPassAndErrorExit;
+					}
 				}
 			}
-			else if(IntentSpecFlag == 1)
+			else
 			{
-				result = AnalyzeResult.IntentSpecCatch;
+				result = AnalyzeResult.CantAnalyze;
 			}
-			else if(IntentSpecFlag == 2)
-			{
-				if(ProgramState == 0)
-				{
-					result = AnalyzeResult.IntentSpecPassAndNormal;
-				}
-				else if(ProgramState == 1)
-				{
-					result = AnalyzeResult.IntentSpecPassAndExit;
-				}
-				else if(ProgramState == 2)
-				{
-					result = AnalyzeResult.IntentSpecPassAndErrorExit;
-				}
-			}
+
 		
 		} catch (WriteException e) {
 			e.printStackTrace();

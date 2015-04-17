@@ -631,6 +631,11 @@ public class Benchmark extends JFrame {
 			if(startOfId != -1)
 			{
 				int endOfId = str.indexOf(' ', startOfId + 5);
+				if(endOfId == -1)
+				{
+					endOfId = str.length();
+				}
+				//logger.info("btnViewlogcat => parseLog - endOfId : " + endOfId);
 				application = str.substring(startOfId + 4, endOfId).trim();
 			}
 			
@@ -947,7 +952,7 @@ public class Benchmark extends JFrame {
 			else
 			{
 				String deviceID = cboDeviceID.getSelectedItem().toString().substring(cboDeviceID.getSelectedItem().toString().indexOf(":") + 1, cboDeviceID.getSelectedItem().toString().length());
-				command = command.replace("adb", "adb -s " + deviceID);
+				command = command.replace("adb shell am", "adb -s " + deviceID + " shell am");
 				
 				logger.info("btnStart => DevicesID : " + deviceID + ", command : " + command);
 			}

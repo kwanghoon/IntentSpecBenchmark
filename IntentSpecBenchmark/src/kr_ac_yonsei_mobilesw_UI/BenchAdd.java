@@ -17,8 +17,12 @@ import javax.swing.ScrollPaneConstants;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JSplitPane;
 import javax.swing.JComboBox;
@@ -27,6 +31,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 
 import kr_ac_yonsei_mobilesw_shall.ExecuteShellCommand;
+
 import javax.swing.JCheckBox;
 
 public class BenchAdd extends JFrame {
@@ -40,6 +45,9 @@ public class BenchAdd extends JFrame {
 	private JComboBox cboMakeMode;
 	private JCheckBox chkExtraValueReplace;
 	private Random rand = new Random(System.currentTimeMillis());
+	
+	private static final Logger logger = Logger.getLogger(Benchmark.class.getName());
+	private FileHandler fileHandler;
 
 	/**
 	 * Launch the application.
@@ -61,6 +69,8 @@ public class BenchAdd extends JFrame {
 	 * Create the frame.
 	 */
 	public BenchAdd(Benchmark mUI) {
+		addFileHandler(logger);
+		
 		setTitle("Add - AdbCommand");
 		
 		this.benchmarkUI = mUI;
@@ -203,6 +213,8 @@ public class BenchAdd extends JFrame {
 		
 		for(int i = 0; i < spLine.length; i++)
 		{
+			logger.info("BenchAdd => parseStr i : " + i);
+			
 			String org = "";
 			String[] spToken = spLine[i].split(" ");
 			
@@ -333,6 +345,24 @@ public class BenchAdd extends JFrame {
 			
 			for(int k = 0; k < spToken.length; k++)
 			{
+				if(spToken[k].equals("-a") || spToken[k].equals("-d") || spToken[k].equals("-t") || spToken[k].equals("-c") ||
+						spToken[k].equals("-n") || spToken[k].equals("-f") || spToken[k].equals("-esn"))
+				{
+					if((spToken[k].length() + spToken[k + 1].length() + 2 + org.length()) > 1024)		//<shell_command> limit 1024byte
+					{
+						break;
+					}
+				}
+				else if(spToken[k].equals("--es") || spToken[k].equals("-e") || spToken[k].equals("--ez") || spToken[k].equals("--ei") ||
+						spToken[k].equals("--el") || spToken[k].equals("--ef") || spToken[k].equals("--eu") || spToken[k].equals("--ecn") ||
+						spToken[k].equals("--eia") || spToken[k].equals("--ela") || spToken[k].equals("--efa"))
+				{
+					if((spToken[k].length() + spToken[k + 1].length() + spToken[k + 2].length() + 3 + org.length()) > 1024)		//<shell_command> limit 1024byte
+					{
+						break;
+					}
+				}
+				
 				org += spToken[k] + " ";
 			}
 			
@@ -395,4 +425,15 @@ public class BenchAdd extends JFrame {
 		
 		return row;
 	}
+	
+    private void addFileHandler(Logger logger) {
+        try {
+            fileHandler = new FileHandler(Benchmark.class.getName() + ".log");
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+        logger.addHandler(fileHandler);
+    }
 }
