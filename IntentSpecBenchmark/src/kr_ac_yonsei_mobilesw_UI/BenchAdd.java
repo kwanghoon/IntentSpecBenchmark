@@ -151,7 +151,7 @@ public class BenchAdd extends JFrame {
 		contentPane.add(txtIntentSpec);
 		
 		cboMakeMode = new JComboBox();
-		cboMakeMode.setModel(new DefaultComboBoxModel(new String[] {"PassOnly", "RandomUsingSpec", "Random"}));
+		cboMakeMode.setModel(new DefaultComboBoxModel(new String[] {"Compatible", "Shape-Compatible", "Random"}));
 		cboMakeMode.setBounds(12, 31, 134, 30);
 		contentPane.add(cboMakeMode);
 		

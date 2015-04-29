@@ -41,7 +41,9 @@ public class BenchStart {
 				int Normal = 0;
 				int Exit = 0;
 				int ErrorExit = 0;
-				int IntentSpecCatch = 0;
+				int IntentSpecCatchAndNormal = 0;
+				int IntentSpecCatchAndExit = 0;
+				int IntentSpecCatchAndErrorExit = 0;
 				int IntentSpecPassAndNormal = 0;
 				int IntentSpecPassAndExit = 0;
 				int IntentSpecPassAndErrorExit = 0;
@@ -139,9 +141,17 @@ public class BenchStart {
 						{
 							ErrorExit++;
 						}
-						else if(result == AnalyzeResult.IntentSpecCatch)
+						else if(result == AnalyzeResult.IntentSpecCatchAndNormal)
 						{
-							IntentSpecCatch++;
+							IntentSpecCatchAndNormal++;
+						}
+						else if(result == AnalyzeResult.IntentSpecCatchAndExit)
+						{
+							IntentSpecCatchAndExit++;
+						}
+						else if(result == AnalyzeResult.IntentSpecCatchAndErrorExit)
+						{
+							IntentSpecCatchAndErrorExit++;
 						}
 						else if(result == AnalyzeResult.IntentSpecPassAndNormal)
 						{
@@ -161,16 +171,19 @@ public class BenchStart {
 						CantAnalyze++;
 					}
 				
-					int resultCount = Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
-							+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze;
+					int resultCount = Normal + Exit + ErrorExit + 
+							+ IntentSpecCatchAndNormal +  IntentSpecCatchAndExit + IntentSpecCatchAndErrorExit
+							+ IntentSpecPassAndNormal + IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze;
 					
 					ui.txtBenchResult.setText("정상실행\t\t: " + Normal
 							+ "\n정상종료\t\t: " + Exit 
 							+ "\n비정상종료\t\t: " + ErrorExit
-							+ "\n인텐트 스펙에서 검출 \t: " + IntentSpecCatch
-							+ "\n인텐트 스펙패스 후 정상실행\t: " + IntentSpecPassAndNormal 
-							+ "\n인텐트 스펙패스 후 정상종료\t: " + IntentSpecPassAndExit 
-							+ "\n인텐트 스펙패스 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
+							+ "\n인텐트 스펙 검출 후 정상실행\t: " + IntentSpecCatchAndNormal
+							+ "\n인텐트 스펙 검출 후 정상종료\t: " + IntentSpecCatchAndExit
+							+ "\n인텐트 스펙 검출 후 비정상종료\t: " + IntentSpecCatchAndErrorExit
+							+ "\n인텐트 스펙 통과 후 정상실행\t: " + IntentSpecPassAndNormal 
+							+ "\n인텐트 스펙 통과 후 정상종료\t: " + IntentSpecPassAndExit 
+							+ "\n인텐트 스펙 통과 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
 							+ "\n분석 실패\t\t: " + CantAnalyze
 							+ "\n진행률\t: " + (int)(((double)resultCount / ui.modelAdbCommand.getRowCount()) * 100) + "% (" + (resultCount + "/" + ui.modelAdbCommand.getRowCount() + ")"));
 					
@@ -181,13 +194,16 @@ public class BenchStart {
 				String resultAll = "정상실행\t\t: " + Normal
 						+ "\n정상종료\t\t: " + Exit 
 						+ "\n비정상종료\t\t: " + ErrorExit
-						+ "\n인텐트 스펙에서 검출 \t: " + IntentSpecCatch
-						+ "\n인텐트 스펙패스 후 정상실행\t: " + IntentSpecPassAndNormal 
-						+ "\n인텐트 스펙패스 후 정상종료\t: " + IntentSpecPassAndExit 
-						+ "\n인텐트 스펙패스 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
+						+ "\n인텐트 스펙 검출 후 정상실행\t: " + IntentSpecCatchAndNormal
+						+ "\n인텐트 스펙 검출 후 정상종료\t: " + IntentSpecCatchAndExit
+						+ "\n인텐트 스펙 검출 후 비정상종료\t: " + IntentSpecCatchAndErrorExit
+						+ "\n인텐트 스펙 통과 후 정상실행\t: " + IntentSpecPassAndNormal 
+						+ "\n인텐트 스펙 통과 후 정상종료\t: " + IntentSpecPassAndExit 
+						+ "\n인텐트 스펙 통과 후 비정상종료\t: " + IntentSpecPassAndErrorExit  
 						+ "\n분석 실패\t\t: " + CantAnalyze
-						+ "\nResult Count\t\t: " + (Normal + Exit + ErrorExit + IntentSpecCatch + IntentSpecPassAndNormal
-								+ IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze);
+						+ "\nResult Count\t\t: " + (Normal + Exit + ErrorExit 
+								+ IntentSpecCatchAndNormal + IntentSpecCatchAndExit + IntentSpecCatchAndErrorExit 
+								+ IntentSpecPassAndNormal + IntentSpecPassAndExit + IntentSpecPassAndErrorExit + CantAnalyze);
 				
 				String[] resultAllLine = resultAll.split("\n");
 				
@@ -420,7 +436,18 @@ public class BenchStart {
 				}
 				else if(IntentSpecFlag == 1)
 				{
-					result = AnalyzeResult.IntentSpecCatch;
+					if(ProgramState == 0)
+					{
+						result = AnalyzeResult.IntentSpecCatchAndNormal;
+					}
+					else if(ProgramState == 1)
+					{
+						result = AnalyzeResult.IntentSpecCatchAndExit;
+					}
+					else if(ProgramState == 2)
+					{
+						result = AnalyzeResult.IntentSpecCatchAndErrorExit;
+					}
 				}
 				else if(IntentSpecFlag == 2)
 				{
